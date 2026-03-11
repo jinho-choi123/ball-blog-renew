@@ -18,6 +18,8 @@ import { remarkAdmonitions } from "./src/plugins/remark-admonitions"; /* Add adm
 import { remarkGithubCard } from "./src/plugins/remark-github-card";
 import { remarkReadingTime } from "./src/plugins/remark-reading-time";
 import { expressiveCodeOptions, siteConfig } from "./src/site.config";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 // https://astro.build/config
 export default defineConfig({
@@ -68,6 +70,7 @@ export default defineConfig({
 	],
 	markdown: {
 		rehypePlugins: [
+			rehypeKatex,
 			rehypeHeadingIds,
 			[rehypeAutolinkHeadings, { behavior: "wrap", properties: { className: ["not-prose"] } }],
 			[
@@ -79,7 +82,7 @@ export default defineConfig({
 			],
 			rehypeUnwrapImages,
 		],
-		remarkPlugins: [remarkReadingTime, remarkDirective, remarkGithubCard, remarkAdmonitions],
+		remarkPlugins: [remarkReadingTime, remarkDirective, remarkGithubCard, remarkAdmonitions, remarkMath],
 		remarkRehype: {
 			footnoteLabelProperties: {
 				className: [""],
