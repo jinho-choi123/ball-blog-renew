@@ -2,7 +2,7 @@
 title: "Experiment: Drawing Roofline for Nemotron-3 Nano"
 description: "This post introduce experiment of drawing roofline for Nemotron-3 Nano model with Nsight Compute and vLLM."
 publishDate: "8 April 2026"
-updatedDate: "8 April 2026"
+updatedDate: "9 April 2026"
 tags: ["AI_SYSTEMS", "PROFILING"]
 ---
 
@@ -35,8 +35,8 @@ The purpose of this experiment is as follows:
 
 ## Experiment Implementation Details
 1. **Eager mode and offline inference**: I used eager mode vLLM offline inference API to run the inference of Nemotron-3 Nano model.
-2. **Chunked prefill with chunk size of 4096**: I used chunked prefill with chunk size of 4096. This means if prefill sequence length is less than 4096, I will run prefill with the actual sequence length. However, if prefill sequence length is greater than 4096, I will run prefill with chunk size of 4096 until I reach the actual sequence length. For example, if prefill sequence length is 5000, I will run prefill with chunk size of 4096 for the first 4096 tokens, and then run prefill with chunk size of 904 for the remaining tokens.
-3. **Monkey patching**: I used monkey patching to insert nvtx marker for each layer, and also to insert "cudaProfileStart" and "cudaProfileStop" for each layer. This allows me to analyze the performance of each layer separately in Nsight Compute and Nsight Systems.
+2. **Chunked prefill with chunk size of 4096**: I used chunked prefill with chunk size of 4096. This means if prefill sequence length is less than 4096, it will prefill with the actual sequence length. However, if prefill sequence length is greater than 4096, it will prefill with chunk size of 4096 until it the end. For example, if prefill sequence length is 5000, vllm runs prefill with chunk size of 4096 for the first 4096 tokens, and then run prefill with chunk size of 904 for the remaining tokens.
+3. **Monkey patching**: I used monkey patching to insert nvtx marker for each layer, and also to insert "cudaProfileStart" and "cudaProfileStop" for each layer. This allows me to distinguish performance measures between layers in Nsight Compute and Nsight Systems.
 4. **Prefill the prompt and decode 1 token**: I setup the experiment to prefill the prompt and decode 1 token. This is because I want to analyze the performance of each layer during prefill, and also during decode. For example, if the prompt length is 8192, then vllm will process as follows: "prefill 4096 tokens" -> "prefill 4096 tokens"  -> "decode 1 token". By doing so, I can analyze the performance of each layer during prefill and decode separately.
 
 ## Experiment Code
