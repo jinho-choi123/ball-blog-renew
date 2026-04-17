@@ -35,7 +35,7 @@ $P$: Mamba Head Dimension
 
 $N$: Dimension of SSM State
 
-$T$: Sequence Sength.
+$T$: Sequence Length.
 
 $S$: Chunk Size. We split the input sequence into chunks of size $S$. This is used at HW compatible Mamba2 implementation.
 
@@ -94,7 +94,7 @@ Assume we are trying to calculate 0th chunk of the input sequence. So we are pro
 $$
 \begin{aligned}
 h_{S-1}
-&= A_{S-1} h_{S-1} + B_{S -1} x_{S-1} \\
+&= A_{S-1} h_{S-2} + B_{S-1} x_{S-1} \\
 &= A_{S-1}A_{S-2}h_{S-2} + A_{S-1}B_{S-2}x_{S-2} + B_{S-1}x_{S-1} \\
 &= ... \\
 &= A_{S-1}A_{S-2}...A_{1}h_{0}+ B_{S-1}x_{S-1} + A_{S-1}B_{S-2}x_{S-2} \\
@@ -119,12 +119,12 @@ y_{2} &= C_{2} h_{2} \\
 $$
 
 If you take a closer look at the equation, we can split the Right-hand side into two parts:
-1. $A_{S-1}A_{S-2}...A_{0}h_{0}$: Part that is relevent to previous chunk. If we generalize the equation for $i$th chunk, then it is $A_{S-1}A_{S-2}...A_{i}h_{S \times i}$. To calculate this part, we need to know the previous chunk's ssm state $h_{S \times i}$.
+1. $A_{S-1}A_{S-2}...A_{1}h_{0}$: Part that is relevant to previous chunk. If we generalize the equation for $i$th chunk, then it is $A_{S-1}A_{S-2}...A_{1}h_{S \times i}$. To calculate this part, we need to know the previous chunk's ssm state $h_{S \times i}$.
 2. Other parts: Part that is irrelevant to previous chunk. 
 
 #### Intra-Chunk Computation: Part that is irrelevant to previous chunk
 
-Set's look at the `2. Other parts` first. To calculate $h_{0 : S}$ in one go, we need to create following matrix:
+Let's look at the `2. Other parts` first. To calculate $h_{0 : S}$ in one go, we need to create following matrix:
 
 1-SS Matrix:
 $$
@@ -159,9 +159,9 @@ y_{1:S} = ((C @ B^T) * L) @ x_{1:S}
 \end{aligned}
 $$
 
-#### Inter-Chunk Computation: Part that is relevent to previous chunk
+#### Inter-Chunk Computation: Part that is relevant to previous chunk
 
-Set's look at the `1. Part that is relevent to previous chunk`.
+Let's look at the `1. Part that is relevant to previous chunk`.
 
 ![Inter-Chunk Computation](./inter-chunk-computation.png)
 
@@ -206,20 +206,20 @@ A = rearrange(A, 'c s h -> h c s')
 
 # 1. Compute the output for each intra-chunk
 L = torch.exp(segsum(A))
-Y_intrachunk = torch.einsum('clhn,cmhn,hclm,cmhp->cshp', C, B, L, X)
+Y_intrachunk = torch.einsum('clhn,cmhn,hclm,cmhp->clhp', C, B, L, x)
 
 # 2. Compute the state for each intra-chunk
 A_cumsum = torch.cumsum(A, dim=-1)
 decay_states = torch.exp(A_cumsum[:, :, -1:] - A_cumsum) # shape: (H, C, S)
-h_intrachunk = torch.einsum('cshn,hcs,cshp->chpn', B, decay_states, X)
+h_intrachunk = torch.einsum('cshn,hcs,cshp->chpn', B, decay_states, x)
 
 # 3. Compute the state for inter-chunk
-if initial_states is not None:
-    initial_states = torch.zeros_like(h_intrachunk[:1]) # shape: (1, S, H, P, N)
+if initial_states is None:
+    initial_states = torch.zeros_like(h_intrachunk[:1]) # shape: (1, H, P, N)
 
 h_intrachunk = torch.cat([initial_states, h_intrachunk], dim=0)
 
-decay_chunk = torch.exp(segsum(F.pad(A_cumsum[:, :, -1]), (1, 0))) # shape: (H, C+1, S)
+decay_chunk = torch.exp(segsum(F.pad(A_cumsum[:, :, -1], (1, 0)))) # shape: (H, C+1, S)
 new_states = torch.einsum('hzs,chpn->zhpn', decay_chunk, h_intrachunk) # (C+1, H, P, N)
 
 states, final_state = new_states[:, :-1], new_states[:, -1]
@@ -230,7 +230,7 @@ Y_interchunk = torch.einsum('cshn,chpn,hcs->cshp', C, states, state_decay_out)
 
 Y = Y_intrachunk + Y_interchunk
 
-Y = rearrange(Y, 'b c l h p -> b (c l) h p')
+Y = rearrange(Y, 'c l h p -> (c l) h p')
 return Y, final_state
 
 ```

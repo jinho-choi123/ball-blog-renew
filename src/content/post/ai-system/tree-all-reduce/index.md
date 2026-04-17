@@ -55,13 +55,13 @@ This is because there is only a single link between PCIe switch and device.
 
 ### Time Complexity of Naive Tree Algorithm
 
-In general, for $N$ devices and $B$bytes/s bandwidth, naive tree algorithm takes $3+2\cdot3\cdot\log_2(N)/N$ time to complete the allReduce operation for $B$ bytes of data.
+In general, for $N$ devices, $W$ bytes/s bandwidth, and $B$ bytes of data, naive tree algorithm takes $(3+2\cdot3\cdot\log_2(N)/N) \cdot \frac{B}{W}$ seconds to complete the allReduce operation.
 
-The pipeline tail latency takes $2\cdot3\cdot\log_2(N)/N$ time.
+The pipeline tail latency takes $2\cdot3\cdot\log_2(N)/N \cdot \frac{B}{W}$ seconds.
 
-After the pipeline is filled, it takes $N\cdot3/N=3$ time to complete the allReduce operation.
+After the pipeline is filled, it takes $N\cdot3/N=3$ units of $\frac{B}{W}$ seconds to complete the allReduce operation.
 
-> Rewind: Ring algorithm takes $2\cdot(N-1) /N$ time to complete the allReduce operation for $B$ bytes of data.
+> Rewind: Ring algorithm takes $\frac{2(N-1)}{N} \cdot \frac{B}{W}$ seconds to complete the allReduce operation for $B$ bytes of data.
 
 As you can see, naive tree algorithm takes longer time than ring algorithm. Let's refine it!
 
@@ -99,11 +99,11 @@ Tree 1 processes the allReduce of Chunk 1, and Tree 2 processes the allReduce of
 
 ### Time Complexity of Double Tree Algorithm
 
-In general, for $N$ devices and $B$bytes/s bandwidth, tree algorithm takes $2+2\cdot4\cdot\log_2(N)/N$ time to complete the allReduce operation for $B$ bytes of data.
+In general, for $N$ devices, $W$ bytes/s bandwidth, and $B$ bytes of data, double-tree algorithm takes $(2+2\cdot4\cdot\log_2(N)/N) \cdot \frac{B}{W}$ seconds to complete the allReduce operation.
 
-The pipeline tail latency takes $2\cdot4\cdot\log_2(N)/N$ time.
+The pipeline tail latency takes $2\cdot4\cdot\log_2(N)/N \cdot \frac{B}{W}$ seconds.
 
-After the pipeline is filled, it takes $(N/2)\cdot4/N=2$ time to complete the allReduce operation.
+After the pipeline is filled, it takes $(N/2)\cdot4/N=2$ units of $\frac{B}{W}$ seconds to complete the allReduce operation.
 
 > You may notice that the time complexity of double-tree algorithm is not better than ring algorithm. This is absolutely correct. But in small data size(where pipeline is barely filled), double-tree algorithm has much better latency than ring algorithm.
 

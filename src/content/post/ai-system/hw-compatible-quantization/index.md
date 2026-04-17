@@ -41,7 +41,7 @@ Let's check if each of the quantization scheme combination is compatible with HW
 
 ![GEMM without Quantization](./gemm_wo_quant.png)
 
-### Case 2: GEMMM with per-Tensor Quantization for Activation and Weight
+### Case 2: GEMM with per-Tensor Quantization for Activation and Weight
 
 > This case is HW compatible.
 

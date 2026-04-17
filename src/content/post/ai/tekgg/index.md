@@ -1,6 +1,6 @@
 ---
 title: "TEKGG, Two-trial tExt Knowledge Graph Generation"
-description: "This post about research project at KAIST CS471 Graph Machine Learning and Mining"
+description: "This post is about research project at KAIST CS471 Graph Machine Learning and Mining"
 publishDate: "10 Jun 2025"
 updatedDate: "11 March 2026"
 tags: ["AI"]

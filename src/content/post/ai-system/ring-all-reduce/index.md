@@ -41,4 +41,4 @@ Ring approach takes 4 seconds to complete the allReduce operation.
 
 As you can see, ring approach utilizes the full bandwidth of the links.
 
-> In general, for $N$ devices and $B$bytes/s bandwidth, ring approach takes $2 \cdot (N-1) / N$ time to complete the allReduce operation for $B$ bytes of data.
+> In general, for $N$ devices, $W$ bytes/s bandwidth, and $B$ bytes of data, ring approach takes $\frac{2(N-1)}{N} \cdot \frac{B}{W}$ seconds to complete the allReduce operation.

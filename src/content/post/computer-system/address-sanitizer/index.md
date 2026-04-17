@@ -15,9 +15,9 @@ Address Sanitizer(ASAN) is a programming tool that can find memory bugs such as 
 
 ### 8 bytes alignment
 
-For every 64-bits System, every memory access(Read/Write) are aligned in 8 Bytes. For example, to read 2 Bytes from the virtual address `0x10001`, program should read 8 Bytes from the virtual address `0x10000`.
+For every 64-bit System, every memory access(Read/Write) is aligned in 8 Bytes. For example, to read 2 Bytes from the virtual address `0x10001`, program should read 8 Bytes from the virtual address `0x10000`.
 
-> System is aligned in 8 Bytes because the CPU Register size is 64-bits= 8 Bytes. According to Von Neumann architecture, CPU should always bring the memory content to CPU registers for calculation.
+> System is aligned in 8 Bytes because the CPU Register size is 64-bits = 8 Bytes. According to Von Neumann architecture, CPU should always bring the memory content to CPU registers for calculation.
 
 ### shadow memory
 
@@ -33,25 +33,25 @@ Address sanitizer stores number of `addressable bytes` in the shadow memory.
 
 ![Shadow Memory](./shadow_memory.png)
 
-8 Bytes of memory chunk use 1 Bytes of shadow memory(metadata). The location of shadow memory in the memory is `(Virtual_Address >> 3) + Offset`. So we don't have to store the mapping of memory-chunk -> shadow memory location.
+8 Bytes of memory chunk uses 1 Byte of shadow memory(metadata). The location of shadow memory in the memory is `(Virtual_Address >> 3) + Offset`. So we don't have to store the mapping of memory-chunk -> shadow memory location.
 
 ### Step 2. Check every memory access and check if it is valid
 
-If calloc happens, then it writes the allocation information to shadow memory. And everytime Read/Write happens, then it reference the shadow memory and validate if it violates the addressable size.
+If calloc happens, then it writes the allocation information to shadow memory. And everytime Read/Write happens, then it references the shadow memory and validates if it violates the addressable size.
 
 **Out-of-bound error detection**
-If program calloc 3 Bytes, and tries to write 5 Byes:
+If program calloc 3 Bytes, and tries to write 5 Bytes:
 
-During calloc, shadow memory value is set to 3. And before write operation, ASAN checks if the write_size is smaller or equal to shadow memory value. Since it's not, ASAN crash the program and notify out-of-bound happend in erroneous location .
+During calloc, shadow memory value is set to 3. And before write operation, ASAN checks if the write_size is smaller or equal to shadow memory value. Since it's not, ASAN crashes the program and notifies that out-of-bound happened in erroneous location.
 
 **Use-after-free bug detection**
-If the program free the memory chunk, and tries to read 5 Bytes:
+If the program frees the memory chunk, and tries to read 5 Bytes:
 
-If we free the memory chunk, then the shadow memory value becomes 0. Before the read operation, ASAN checks if the read_size is smaller or equal to shadow memory value. Since it's not, ASAN crash the program and notify use-after-free happend in erroneous location.
+If we free the memory chunk, then the shadow memory value becomes 0. Before the read operation, ASAN checks if the read_size is smaller or equal to shadow memory value. Since it's not, ASAN crashes the program and notifies that use-after-free happened in erroneous location.
 
 ## Downside of Address Sanitizer
 
-ASAN is a powerful tool to find memory bug. But it has a huge performance overhead because it has to check shadow memory for every memory operations(Read/Write) and memory allocation/deallocation. So we never use ASAN in production, but just in development stage.
+ASAN is a powerful tool to find memory bugs. But it has a huge performance overhead because it has to check shadow memory for every memory operation(Read/Write) and memory allocation/deallocation. So we never use ASAN in production, but just in development stage.
 
 ## Conclusion
 

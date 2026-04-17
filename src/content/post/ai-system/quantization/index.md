@@ -13,9 +13,9 @@ This post introduces fundamental quantization method.
 
 ## Quantization
 
-Quantization in AI is about compacting the data using lesser bits. For example, most popular quantization method nowaday is converting FP16 into INT8. By doing so, we are just using half of bits during calculation.
+Quantization in AI is about compacting the data using lesser bits. For example, most popular quantization method nowadays is converting FP16 into INT8. By doing so, we are just using half of bits during calculation.
 
-However, we should be careful using quantization because quantization inevitably loses precision of the data. As we quantize FP16 into INT8, and dequantize INT8 into FP16, informations will be lost.
+However, we should be careful using quantization because quantization inevitably loses precision of the data. As we quantize FP16 into INT8, and dequantize INT8 into FP16, information will be lost.
 
 ## Example of Vector Quantization 
 
@@ -98,5 +98,5 @@ $$
 
 ## Benefits of Quantization
 
-1. Reduces activation and weight memory footprint. Since it use INT8 instead of FP16, it halves the data size.
-2. Increase throughputs. For example, NVIDIA H100 Tensor Core can perform 2x more FLOPS in INT8 compared to FP16.
+1. Reduces activation and weight memory footprint. Since it uses INT8 instead of FP16, it halves the data size.
+2. Increases throughput. For example, NVIDIA H100 Tensor Core can perform 2x more FLOPS in INT8 compared to FP16.

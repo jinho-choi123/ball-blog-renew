@@ -1,6 +1,6 @@
 ---
 title: "Multihead Latent Attention (MLA)"
-description: "This post introduce MLA technique that was introduced in Deepseek-v2 technical report."
+description: "This post introduces MLA technique that was introduced in Deepseek-v2 technical report."
 publishDate: "7 April 2026"
 updatedDate: "7 April 2026"
 tags: ["AI"]
@@ -59,7 +59,7 @@ This implementation still benefits from the compression of KV cache. The memory 
 
 ## Optimized Implementation
 
-Deepseek-v2 introduces an fused implementation of MLA that reduces the computational cost by fusing the up projection and attention computation. The following figure illustrates the fused structure of MLA:
+Deepseek-v2 introduces a fused implementation of MLA that reduces the computational cost by fusing the up projection and attention computation. The following figure illustrates the fused structure of MLA:
 
 ![optimized MLA structure](./optimized-mla-structure.png)
 

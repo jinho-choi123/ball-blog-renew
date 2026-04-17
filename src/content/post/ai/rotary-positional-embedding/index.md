@@ -18,7 +18,7 @@ In the original transformer model, positional embedding is implemented as an add
 
 $$x_t + PE(t)$$
 
-However, this additive method has limitation. It cannot capture the relative position between tokens effectively. Adding the positional embedding and applying self-attention wouldn't model the relative position between tokens well.
+However, this additive method has a limitation. It cannot capture the relative position between tokens effectively. Adding the positional embedding and applying self-attention wouldn't model the relative position between tokens well.
 
 ## Rotary Positional Embedding(Multiplicative)
 
@@ -115,7 +115,7 @@ $$
 (x_{n0}', x_{n1}') = e^{i \theta_1 n} (x_{n0}, x_{n1})
 \end{aligned}
 $$
-1. Rotate the last two dimensions with $\theta_2$:
+2. Rotate the last two dimensions with $\theta_2$:
 $$
 \begin{aligned}
 (x_{m2}', x_{m3}') = e^{i \theta_2 m} (x_{m2}, x_{m3}) \\
