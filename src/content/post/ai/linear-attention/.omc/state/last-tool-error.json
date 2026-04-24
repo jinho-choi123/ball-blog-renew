@@ -1,0 +1,7 @@
+{
+  "tool_name": "mcp__claude_ai_Linear__create_document",
+  "tool_input_preview": "{\"title\":\"Blog Post Plan: Linear Attention\",\"project\":\"Personal Sprint\",\"issue\":\"BAL-50\",\"content\":\"# Blog Post Plan: Linear Attention\\n\\n**Issue**: BAL-50 — Study Mathematical Concept of Linear Atten...",
+  "error": "Error: Exactly one of project or issue must be specified",
+  "timestamp": "2026-04-23T12:55:36.717Z",
+  "retry_count": 1
+}
