@@ -10,6 +10,7 @@ tags: ["AI"]
 Linear attention is a technique that modifies the traditional softmax attention mechanism to reduce computational complexity while maintaining fixed memory usage. This article explores the mathematical formulation of linear attention, its advantages over softmax attention.
 
 ## Terminology
+
 - $q_t \in \mathbb{R}^{1 \times d}$: the query vector at time $t$
 - $k_t \in \mathbb{R}^{1 \times d}$: the key vector at time $t$
 - $v_t \in \mathbb{R}^{1 \times d}$: the value vector at time $t$
@@ -53,8 +54,10 @@ Linear attention modifies the softmax attention by removing the softmax function
 
 Parallel form:
 $$
-O = (QK^T + M)V
+O = (QK^T \odot \text{Mask})V
 $$
+
+where $\text{Mask} \in \mathbb{R}^{L \times L}$ is the lower triangular causal mask with $\text{Mask}_{ij} = 1$ if $i \geq j$ and $0$ otherwise.
 
 Recurrent form:
 $$

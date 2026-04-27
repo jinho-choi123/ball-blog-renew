@@ -7,7 +7,7 @@ tags: ["AI_SYSTEMS"]
 ---
 
 
-Please check [Ring All Reduce Algorithm](../ring-all-reduce/index.md) first.
+Please check [Ring All Reduce Algorithm](../ring-all-reduce/) first.
 
 ## Summary
 
