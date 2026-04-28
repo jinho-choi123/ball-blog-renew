@@ -341,7 +341,7 @@ If we expand $\text{Eq. 6}$ and $\text{Eq. 7}$ into matrix form, we can get the 
 $$
 \begin{aligned}
 S_{[t]}^{0:C} &= (I - K_{[t]}^T W_{[t]}^{0:C}) S_{[t-1]}^C + {K_{[t]}^{0:C}}^T U_{[t]}^{0:C} \\
-&= S_{[t-1]}^C - {K_{[t]}^{0:C}}^T \underset{\text{Delta corrected Value}}{\underline{\left(U_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C \right)}} \\
+&= S_{[t-1]}^C + {K_{[t]}^{0:C}}^T \underset{\text{Delta corrected Value}}{\underline{\left(U_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C \right)}} \\
 O_{[t]}^{0:C} &= Q_{[t]}^{0:C}S_{[t-1]}^C + (Q_{[t]}^{0:C}{K_{[t]}^{0:C}}^T \odot \text{Mask}) \underset{\text{Delta corrected Value}}{\underline{(U_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C)}}
 \end{aligned}
 $$
@@ -496,7 +496,7 @@ U_{[t]}^{0:C} &= (I - A_{[t]}^{0:C})^{-1} \text{diag}(\beta_{[t]}^{0:C})V_{[t]}^
 &\text{Main computation} \\
 
 S_{[t]}^{0:C} &= (I - K_{[t]}^T W_{[t]}^{0:C}) S_{[t-1]}^C + {K_{[t]}^{0:C}}^T U_{[t]}^{0:C} \\
-&= S_{[t-1]}^C - {K_{[t]}^{0:C}}^T \underset{\text{Delta corrected Value}}{\underline{\left(U_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C \right)}} \\
+&= S_{[t-1]}^C + {K_{[t]}^{0:C}}^T \underset{\text{Delta corrected Value}}{\underline{\left(U_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C \right)}} \\
 O_{[t]}^{0:C} &= Q_{[t]}^{0:C}S_{[t-1]}^C + (Q_{[t]}^{0:C}{K_{[t]}^{0:C}}^T \odot \text{Mask}) \underset{\text{Delta corrected Value}}{\underline{(U_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C)}} \\
 
 
