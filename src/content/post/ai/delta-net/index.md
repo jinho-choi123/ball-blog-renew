@@ -340,8 +340,9 @@ If we expand $\text{Eq. 6}$ and $\text{Eq. 7}$ into matrix form, we can get the 
 
 $$
 \begin{aligned}
-S_{[t+1]}^{0:C} &= (I - K^T W) S_{[t]}^C + K^T U \\
-O_{[t]}^{0:C} &= Q_{[t]}^{0:C}S_{[t-1]}^C + (Q_{[t]}^{0:C}{K_{[t]}^{0:C}}^T \odot \text{Mask}) (U_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C)
+S_{[t]}^{0:C} &= (I - K_{[t]}^T W_{[t]}^{0:C}) S_{[t-1]}^C + {K_{[t]}^{0:C}}^T U_{[t]}^{0:C} \\
+&= S_{[t-1]}^C - {K_{[t]}^{0:C}}^T \underset{\text{Delta corrected Value}}{\underline{\left(U_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C \right)}} \\
+O_{[t]}^{0:C} &= Q_{[t]}^{0:C}S_{[t-1]}^C + (Q_{[t]}^{0:C}{K_{[t]}^{0:C}}^T \odot \text{Mask}) \underset{\text{Delta corrected Value}}{\underline{(U_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C)}}
 \end{aligned}
 $$
 
@@ -357,7 +358,7 @@ $$
 
 We only discussed the recurrent form of $u$ and $w$, but we can also derive the parallel form of $u$ and $w$. We are going to use simple representation for the parallel form of $u$ and $w$:
 
-#### Step 1. Finding pattern from the recurrent form:
+#### Step 1. Finding pattern from the recurrent form
 
 $$
 \begin{aligned}
@@ -428,7 +429,7 @@ $$
 $$
 \begin{aligned}
 (I-A) W = \text{diag}(\beta) K \\
-\text{where} 
+\text{where}
 &\quad W = \begin{bmatrix}w_0 \\
 w_1 \\
 w_2 \\
@@ -452,7 +453,7 @@ k_{r} \\
 \end{aligned}
 $$
 
-#### Step 4. Solving the matrix equation:
+#### Step 4. Solving the matrix equation
 
 $$
 \begin{aligned}
@@ -478,6 +479,27 @@ $$
 \begin{aligned}
 W_{[t]}^{0:C} &= (I - A_{[t]}^{0:C})^{-1} \text{diag}(\beta_{[t]}^{0:C})K_{[t]}^{0:C} \\
 U_{[t]}^{0:C} &= (I - A_{[t]}^{0:C})^{-1} \text{diag}(\beta_{[t]}^{0:C})V_{[t]}^{0:C} \\
+\end{aligned}
+$$
+
+## Final form of DeltaNet
+
+Form is somewhat same as pure linear attention!
+
+$$
+\begin{aligned}
+&\text{Preparing auxiliary matrices} \\
+A_{[t]}^{0:C} &= \text{tril}(\text{diag}(\beta_{[t]}^{0:C})K_{[t]}^{0:C} {K_{[t]}^{0:C}}^T, -1)\\
+W_{[t]}^{0:C} &= (I - A_{[t]}^{0:C})^{-1} \text{diag}(\beta_{[t]}^{0:C})K_{[t]}^{0:C} \\
+U_{[t]}^{0:C} &= (I - A_{[t]}^{0:C})^{-1} \text{diag}(\beta_{[t]}^{0:C})V_{[t]}^{0:C} \\ \\
+
+&\text{Main computation} \\
+
+S_{[t]}^{0:C} &= (I - K_{[t]}^T W_{[t]}^{0:C}) S_{[t-1]}^C + {K_{[t]}^{0:C}}^T U_{[t]}^{0:C} \\
+&= S_{[t-1]}^C - {K_{[t]}^{0:C}}^T \underset{\text{Delta corrected Value}}{\underline{\left(U_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C \right)}} \\
+O_{[t]}^{0:C} &= Q_{[t]}^{0:C}S_{[t-1]}^C + (Q_{[t]}^{0:C}{K_{[t]}^{0:C}}^T \odot \text{Mask}) \underset{\text{Delta corrected Value}}{\underline{(U_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C)}} \\
+
+
 \end{aligned}
 $$
 
