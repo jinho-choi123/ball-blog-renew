@@ -41,7 +41,7 @@ $$
 \end{aligned}
 $$
 
-where $\Gamma_{ij} = \gamma_{[t]}^i / \gamma_{[t]}^j$ for $i > j$ is the inter-position gate decay ratio, computed stably in log space as $\exp(\text{cumsum}(\log\alpha)_i - \text{cumsum}(\log\alpha)_j)$.
+where $\Gamma_{ij} = \gamma_{[t]}^i / \gamma_{[t]}^j$ for $i \geq j$ is the inter-position gate decay ratio (with $\Gamma_{ii} = 1$), computed stably in log space as $\exp(\text{cumsum}(\log\alpha)_i - \text{cumsum}(\log\alpha)_j)$. The strict-lower-triangular mask in $\tilde{A}$ is enforced by the explicit $\text{tril}(\cdot, -1)$ operator, so the diagonal value of $\Gamma$ is irrelevant there.
 
 Note three key differences from the degatified form:
 

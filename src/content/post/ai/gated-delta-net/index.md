@@ -36,7 +36,7 @@ GatedDeltaNet unifies two complementary linear attention mechanisms: DeltaNet's 
 
 Before diving into GatedDeltaNet, let's understand where it sits in the evolution of linear attention mechanisms. Each generation adds a new capability to the state update rule.
 
-### 1st Generation: Additive (Linear Attention, RetNet)
+### 1st Generation: Additive (Linear Attention)
 
 $$
 S_t = S_{t-1} + k_t^T v_t
@@ -46,7 +46,7 @@ The state matrix accumulates all key-value associations via simple addition. The
 
 > **Limitation:** No selective forgetting. Old, irrelevant associations persist forever, causing interference in long contexts.
 
-### 2nd Generation: Gated Additive (Mamba2, GLA)
+### 2nd Generation: Gated Additive (RetNet, Mamba2, GLA)
 
 $$
 S_t = G_t \odot S_{t-1} + k_t^T v_t
@@ -103,7 +103,7 @@ $$
 W_{\text{new}} = W_{\text{old}} - \eta \nabla (L + \frac{\lambda}{2}\|W\|^2)
 $$
 
-**Decoupled Weight Decay (AdamW style)** — decay first, then take gradient step on the decayed weights:
+**Decoupled Weight Decay** — decay first, then take gradient step on the decayed weights:
 $$
 \begin{aligned}
 \tilde{W} &= \alpha W_{\text{old}} \quad \text{(decay first)} \\
@@ -112,6 +112,8 @@ W_{\text{new}} &= \tilde{W} - \eta \nabla L(\tilde{W}) \quad \text{(gradient on 
 $$
 
 The key difference: in decoupled weight decay, the gradient is computed at the **decayed** point $\tilde{W}$, not the original $W_{\text{old}}$. GatedDeltaNet uses the decoupled form.
+
+> **Note:** Standard AdamW evaluates the gradient at the original $W$ ($W_{\text{new}} = W_{\text{old}} - \eta(\nabla L + \lambda W_{\text{old}})$). GatedDeltaNet's "decay-then-gradient-on-decayed" is a stricter form of decoupling: applying standard AdamW directly would yield the L2-form transition $(\alpha_t I - \beta_t k_t^T k_t)$ instead.
 
 #### Derivation: Two-Step Process
 
@@ -217,30 +219,32 @@ A naive approach would be to unroll this within a chunk and try to incorporate t
 Define a "degatified" state by dividing out the cumulative gate product:
 
 $$
-\tilde{S}^r = \frac{S^r}{\gamma^r} \quad \text{where} \quad \gamma^r = \prod_{i=1}^r \alpha_i
+\tilde{S}_{[t]}^r = \frac{S_{[t]}^r}{\gamma_{[t]}^r} \quad \text{where} \quad \gamma_{[t]}^r = \prod_{i=1}^r \alpha_{[t]}^i
 \tag{Eq. 2}
 $$
 
-Let's derive the recurrence for $\tilde{S}$. Starting from GatedDeltaNet's recurrence:
+Here $\gamma_{[t]}^r$ is the **chunk-local** cumulative gate product within chunk $[t]$, so $\gamma_{[t]}^0 = 1$ (empty product). Inter-chunk state transitions are handled separately via the $\gamma_{[t]}^C$ factor at chunk boundaries.
+
+Let's derive the recurrence for $\tilde{S}_{[t]}$. Starting from GatedDeltaNet's recurrence within chunk $[t]$:
 
 $$
 \begin{aligned}
-S^r &= \alpha^r(I - \beta^r {k^r}^T k^r) S^{r-1} + \beta^r {k^r}^T v^r \\
-\gamma^r \tilde{S}^r &= \alpha^r(I - \beta^r {k^r}^T k^r) \gamma^{r-1} \tilde{S}^{r-1} + \beta^r {k^r}^T v^r \\
-\gamma^r \tilde{S}^r &= \gamma^r(I - \beta^r {k^r}^T k^r) \tilde{S}^{r-1} + \beta^r {k^r}^T v^r \quad (\text{since } \alpha^r \gamma^{r-1} = \gamma^r) \\
-\tilde{S}^r &= (I - \beta^r {k^r}^T k^r) \tilde{S}^{r-1} + \frac{\beta^r}{\gamma^r} {k^r}^T v^r \\
-\tilde{S}^r &= (I - \beta^r {k^r}^T k^r) \tilde{S}^{r-1} + \beta^r {k^r}^T \tilde{v}^r
+S_{[t]}^r &= \alpha_{[t]}^r(I - \beta_{[t]}^r {k_{[t]}^r}^T k_{[t]}^r) S_{[t]}^{r-1} + \beta_{[t]}^r {k_{[t]}^r}^T v_{[t]}^r \\
+\gamma_{[t]}^r \tilde{S}_{[t]}^r &= \alpha_{[t]}^r(I - \beta_{[t]}^r {k_{[t]}^r}^T k_{[t]}^r) \gamma_{[t]}^{r-1} \tilde{S}_{[t]}^{r-1} + \beta_{[t]}^r {k_{[t]}^r}^T v_{[t]}^r \\
+\gamma_{[t]}^r \tilde{S}_{[t]}^r &= \gamma_{[t]}^r(I - \beta_{[t]}^r {k_{[t]}^r}^T k_{[t]}^r) \tilde{S}_{[t]}^{r-1} + \beta_{[t]}^r {k_{[t]}^r}^T v_{[t]}^r \quad (\text{since } \alpha_{[t]}^r \gamma_{[t]}^{r-1} = \gamma_{[t]}^r) \\
+\tilde{S}_{[t]}^r &= (I - \beta_{[t]}^r {k_{[t]}^r}^T k_{[t]}^r) \tilde{S}_{[t]}^{r-1} + \frac{\beta_{[t]}^r}{\gamma_{[t]}^r} {k_{[t]}^r}^T v_{[t]}^r \\
+\tilde{S}_{[t]}^r &= (I - \beta_{[t]}^r {k_{[t]}^r}^T k_{[t]}^r) \tilde{S}_{[t]}^{r-1} + \beta_{[t]}^r {k_{[t]}^r}^T \tilde{v}_{[t]}^r
 \tag{Eq. 3}
 \end{aligned}
 $$
 
-where $\tilde{v}^r = v^r / \gamma^r$ is the gate-rescaled value.
+where $\tilde{v}_{[t]}^r = v_{[t]}^r / \gamma_{[t]}^r$ is the gate-rescaled value.
 
-> **This is a standard DeltaNet recurrence!** The degatified state $\tilde{S}$ follows exactly the same update rule as DeltaNet, just with rescaled values $\tilde{v}^r = v^r / \gamma^r$. This means we can directly apply DeltaNet's chunked parallel form.
+> **This is a standard DeltaNet recurrence!** The degatified state $\tilde{S}_{[t]}$ follows exactly the same update rule as DeltaNet, just with rescaled values $\tilde{v}_{[t]}^r = v_{[t]}^r / \gamma_{[t]}^r$. This means we can directly apply DeltaNet's chunked parallel form.
 
 ### Applying DeltaNet's Chunked Form to the Degatified State
 
-Since $\tilde{S}$ follows a DeltaNet recurrence with values $\tilde{V}$ (rows $\tilde{v}^j = v^j/\gamma^j$), we apply the standard chunked form:
+Since $\tilde{S}_{[t]}$ follows a DeltaNet recurrence with values $\tilde{V}_{[t]}$ (rows $\tilde{v}_{[t]}^j = v_{[t]}^j/\gamma_{[t]}^j$), we apply the standard chunked form:
 
 $$
 \begin{aligned}
@@ -257,7 +261,7 @@ $$
 \tilde{S}_{[t]}^{0:C} = S_{[t-1]}^C + {K_{[t]}^{0:C}}^T(\tilde{U}_{[t]}^{0:C} - W_{[t]}^{0:C} S_{[t-1]}^C)
 $$
 
-Note that $\tilde{S}_{[t]}^0 = S_{[t-1]}^C$ since $\gamma^0 = 1$ (empty product).
+Note that $\tilde{S}_{[t]}^0 = S_{[t-1]}^C$ since $\gamma_{[t]}^0 = 1$ (empty product).
 
 Converting back to the real state:
 
