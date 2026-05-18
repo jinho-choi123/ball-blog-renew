@@ -9,8 +9,8 @@ tags: ["AI"]
 
 This post assumes familiarity with:
 
-- [GatedDeltaNet: Improving Mamba2 with Delta Rule](/post/ai/gated-delta-net/) — the degatified chunked form (Eq. 4-5)
-- [DeltaNet: WY Representation and UT Transform](/post/ai/delta-net/) — the underlying machinery
+- [GatedDeltaNet: Improving Mamba2 with Delta Rule](/posts/ai/gated-delta-net/) — the degatified chunked form (Eq. 4-5)
+- [DeltaNet: WY Representation and UT Transform](/posts/ai/delta-net/) — the underlying machinery
 
 We use the same notation established in those posts. In particular, recall the degatified chunked form:
 
